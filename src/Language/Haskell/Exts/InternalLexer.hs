@@ -88,6 +88,7 @@ data Token
         | Bar
         | LeftArrow
         | RightArrow
+        | Lolly
         | At
         | TApp -- '@' but have to check for preceeding whitespace
         | Tilde
@@ -101,6 +102,7 @@ data Token
         | RightDblArrowTail     -- >>-
         | OpenArrowBracket      -- (|
         | CloseArrowBracket     -- |)
+        | Percent 
 
 -- Template Haskell
         | THExpQuote            -- [| or [e|
@@ -234,11 +236,13 @@ reserved_ops = [
  ( "|",  (Bar,          Nothing) ),
  ( "<-", (LeftArrow,    Nothing) ),
  ( "->", (RightArrow,   Nothing) ),
+ ( "->.", (Lolly,       Nothing) ),
  ( "@",  (At,           Nothing) ),
  ( "@:", (RPCAt,        Just (Any [RegularPatterns])) ),
  ( "~",  (Tilde,        Nothing) ),
  ( "=>", (DoubleArrow,  Nothing) ),
  ( "*",  (Star,         Just (Any [KindSignatures])) ),
+ ( "%",  (Percent,         Nothing ) ),
  -- Parallel arrays
  ( "[:", (ParArrayLeftSquare,   Just (Any [ParallelArrays])) ),
  ( ":]", (ParArrayRightSquare,  Just (Any [ParallelArrays])) ),
@@ -1365,6 +1369,7 @@ showToken t = case t of
   Bar               -> "|"
   LeftArrow         -> "<-"
   RightArrow        -> "->"
+  Lolly             -> "->."
   At                -> "@"
   TApp              -> "@"
   Tilde             -> "~"
@@ -1372,6 +1377,7 @@ showToken t = case t of
   Minus             -> "-"
   Exclamation       -> "!"
   Star              -> "*"
+  Percent           -> "%"
   LeftArrowTail     -> "-<"
   RightArrowTail    -> ">-"
   LeftDblArrowTail  -> "-<<"

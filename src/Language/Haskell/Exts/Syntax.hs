@@ -632,7 +632,7 @@ data Type l
         (Maybe (Context l))
         (Type l)                                -- ^ qualified type
      | TyStar  l                                -- ^ @*@, the type of types
-     | TyFun   l (Type l) (Type l)              -- ^ function type
+     | TyFun   l (Maybe (Type l)) (Type l) (Type l)              -- ^ function type
      | TyTuple l Boxed [Type l]                 -- ^ tuple type, possibly boxed
      | TyUnboxedSum l [Type l]                  -- ^ unboxed tuple type
      | TyList  l (Type l)                       -- ^ list syntax, e.g. [a], as opposed to [] a
@@ -1503,7 +1503,7 @@ instance Annotated Type where
     ann t = case t of
       TyForall l _ _ _              -> l
       TyStar  l                     -> l
-      TyFun   l _ _                 -> l
+      TyFun   l _ _ _                 -> l
       TyTuple l _ _                 -> l
       TyUnboxedSum l _              -> l
       TyList  l _                   -> l
@@ -1523,7 +1523,7 @@ instance Annotated Type where
     amap f t1 = case t1 of
       TyForall l mtvs mcx t         -> TyForall (f l) mtvs mcx t
       TyStar  l                     -> TyStar (f l)
-      TyFun   l t1' t2              -> TyFun (f l) t1' t2
+      TyFun   l m t1' t2              -> TyFun (f l) m t1' t2
       TyTuple l b ts                -> TyTuple (f l) b ts
       TyUnboxedSum l s              -> TyUnboxedSum (f l) s
       TyList  l t                   -> TyList (f l) t

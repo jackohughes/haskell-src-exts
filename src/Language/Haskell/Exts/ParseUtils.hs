@@ -57,6 +57,7 @@ module Language.Haskell.Exts.ParseUtils (
     , mkRoleAnnotDecl       --
     , mkAssocType
     , mkEThingWith
+    , mkOneMult
     , splitTilde
     -- HaRP
     , checkRPattern         -- PExp -> P RPat
@@ -1093,7 +1094,7 @@ checkT t simple = case t of
             ctxt <- checkContext cs
             check1Type pt (S.TyForall l tvs ctxt)
     TyStar  l         -> return $ S.TyStar l
-    TyFun   l at rt   -> check2Types at rt (S.TyFun l)
+    TyFun   l mt at rt   -> check3Types mt at rt (S.TyFun l)
     TyTuple l b pts   -> checkTypes pts >>= return . S.TyTuple l b
     TyUnboxedSum l es -> checkTypes es >>= return . S.TyUnboxedSum l
     TyList  l pt      -> check1Type pt (S.TyList l)
@@ -1131,6 +1132,10 @@ check1Type pt f = checkT pt True >>= return . f
 
 check2Types :: PType L -> PType L -> (S.Type L -> S.Type L -> S.Type L) -> P (S.Type L)
 check2Types at bt f = checkT at True >>= \a -> checkT bt True >>= \b -> return (f a b)
+
+check3Types :: Maybe (PType L) -> PType L -> PType L -> (Maybe (S.Type L) -> S.Type L -> S.Type L -> S.Type L) -> P (S.Type L)
+check3Types (Just mt) at bt f = checkT mt True >>= \m -> checkT at True >>= \a -> checkT bt True >>= \b -> return (f (Just m) a b)
+check3Types Nothing at bt f = check2Types at bt (f Nothing)
 
 checkTypes :: [PType L] -> P [S.Type L]
 checkTypes = mapM (flip checkT True)
@@ -1309,3 +1314,6 @@ mkSumOrTuple Unboxed s (SSum before after e) = return (UnboxedSum s before after
 mkSumOrTuple boxity s (STuple ms) =
     return $ TupleSection s boxity ms
 mkSumOrTuple Boxed _s (SSum {}) = fail "Boxed sums are not implemented"
+
+mkOneMult :: L -> PType L
+mkOneMult s =  TyCon s (UnQual s (Ident s "->."))

@@ -1059,11 +1059,27 @@ instance ExactP Type where
         maybeEP exactPC mctxt
         exactPC t
     TyStar  _ -> printString "*"
-    TyFun   l t1 t2 ->
+    TyFun   l Nothing t1 t2 ->
         case srcInfoPoints l of
          [a] -> do
             exactP t1
             printStringAt (pos a) "->"
+            exactPC t2
+         _ -> errorEP "ExactP: Type: TyFun is given wrong number of srcInfoPoints"
+    TyFun   l (Just (TyCon _ (UnQual _ (Ident _ name)))) t1 t2 | name == "->." ->
+        case srcInfoPoints l of
+         [a] -> do
+            exactP t1
+            printStringAt (pos a) "->."
+            exactPC t2
+         _ -> errorEP "ExactP: Type: TyFun is given wrong number of srcInfoPoints"
+    TyFun   l (Just mt) t1 t2 ->
+        case srcInfoPoints l of
+         [a, b] -> do
+            exactP t1
+            printStringAt (pos a) "%"
+            exactP mt
+            printStringAt (pos b) "->"
             exactPC t2
          _ -> errorEP "ExactP: Type: TyFun is given wrong number of srcInfoPoints"
     TyTuple l bx ts ->

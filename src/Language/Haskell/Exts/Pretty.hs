@@ -853,8 +853,12 @@ instance  Pretty (Type l) where
         prettyPrec p (TyForall _ mtvs ctxt htype) = parensIf (p > 0) $
                 myFsep [ppForall mtvs, maybePP pretty ctxt, pretty htype]
         prettyPrec _ (TyStar _) = text "*"
-        prettyPrec p (TyFun _ a b) = parensIf (p > 0) $
+        prettyPrec p (TyFun _ Nothing a b) = parensIf (p > 0) $
                 myFsep [ppBType a, text "->", pretty b]
+        prettyPrec p (TyFun _ (Just (TyCon _ (UnQual _ (Ident _ name)))) a b) | name == "->." = parensIf (p > 0) $
+                myFsep [ppBType a, text "->.", pretty b]
+        prettyPrec p (TyFun _ (Just mt) a b) = parensIf (p > 0) $
+                myFsep [ppBType a, text "%", ppAType mt, text "->", pretty b]
         prettyPrec _ (TyTuple _ bxd l) =
                 let ds = map pretty l
                  in case bxd of
@@ -1677,7 +1681,7 @@ instance SrcInfo loc => Pretty (P.PType loc) where
         prettyPrec p (P.TyForall _ mtvs ctxt htype) = parensIf (p > 0) $
                 myFsep [ppForall mtvs, maybePP pretty ctxt, pretty htype]
         prettyPrec _ (P.TyStar _) = text "*"
-        prettyPrec p (P.TyFun _ a b) = parensIf (p > 0) $
+        prettyPrec p (P.TyFun _ _ a b) = parensIf (p > 0) $
                 myFsep [prettyPrec prec_btype a, text "->", pretty b]
         prettyPrec _ (P.TyTuple _ bxd l) =
                 let ds = map pretty l

@@ -304,7 +304,7 @@ data PType l
         (Maybe (PContext l))
         (PType l)
      | TyStar  l                                -- ^ @*@, the type of types
-     | TyFun   l (PType l) (PType l)            -- ^ function type
+     | TyFun   l (Maybe (PType l)) (PType l) (PType l)            -- ^ function type
      | TyTuple l Boxed     [PType l]            -- ^ tuple type, possibly boxed
      | TyUnboxedSum l [PType l]                 -- ^ unboxed sum
      | TyList  l (PType l)                      -- ^ list syntax, e.g. [a], as opposed to [] a
@@ -328,7 +328,7 @@ instance Annotated PType where
     ann t = case t of
       TyForall l _ _ _              -> l
       TyStar  l                     -> l
-      TyFun   l _ _                 -> l
+      TyFun   l _ _ _                 -> l
       TyTuple l _ _                 -> l
       TyUnboxedSum l _              -> l
       TyList  l _                   -> l
@@ -349,7 +349,7 @@ instance Annotated PType where
     amap f t' = case t' of
       TyForall l mtvs mcx t         -> TyForall (f l) mtvs mcx t
       TyStar  l                     -> TyStar (f l)
-      TyFun   l t1 t2               -> TyFun (f l) t1 t2
+      TyFun   l m t1 t2               -> TyFun (f l) m t1 t2
       TyTuple l b ts                -> TyTuple (f l) b ts
       TyUnboxedSum l ts             -> TyUnboxedSum (f l) ts
       TyList  l t                   -> TyList (f l) t

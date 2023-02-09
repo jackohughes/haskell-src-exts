@@ -158,6 +158,7 @@ Reserved operators
 >       '|'     { Loc $$ Bar }
 >       '<-'    { Loc $$ LeftArrow }
 >       '->'    { Loc $$ RightArrow }
+>       '->.'   { Loc $$ Lolly }
 >       '@'     { Loc $$ At }
 >       TYPEAPP { Loc $$ TApp }
 >       '~'     { Loc $$ Tilde }
@@ -165,6 +166,7 @@ Reserved operators
 >       '-'     { Loc $$ Minus }
 >       '!'     { Loc $$ Exclamation }  -- 50
 >       '*'     { Loc $$ Star }
+>       '%'     { Loc $$ Percent }
 
 Arrows
 
@@ -959,7 +961,9 @@ Type equality contraints need the TypeFamilies extension.
 >       : btype_(ostar,kstar)                                           { splitTilde $1 }
 >       | btype_(ostar,kstar) qtyconop dtype_(ostar,kstar)              { TyInfix ($1 <> $3) $1 $2 $3 }
 >       | btype_(ostar,kstar) qtyvarop_(ostar) dtype_(ostar,kstar)      { TyInfix ($1 <> $3) $1 (UnpromotedName (ann $2) $2) $3 } -- FIXME
->       | btype_(ostar,kstar) '->' ctype_(ostar,kstar)                  { TyFun ($1 <> $3 <** [$2]) (splitTilde $1) $3 }
+>       | btype_(ostar,kstar) '->' ctype_(ostar,kstar)                  { TyFun ($1 <> $3 <** [$2]) Nothing (splitTilde $1) $3 }
+>       | btype_(ostar,kstar) '->.' ctype_(ostar,kstar)                 { TyFun ($1 <> $3 <** [$2]) (Just $ mkOneMult ($1 <> $3)) (splitTilde $1) $3 }
+>       | btype_(ostar,kstar) '%' atype '->' ctype_(ostar,kstar)        { TyFun ($1 <> $5 <** [$2, $4]) (Just $3) (splitTilde $1) $5 }
        | btype_(ostar,kstar) '~' btype_(ostar,kstar)                    {% do { checkEnabledOneOf [TypeFamilies, GADTs] ;
                                                                                 let {l = $1 <> $3 <** [$2]};
                                                                                 return $ TyPred l $ EqualP l $1 $3 } }
